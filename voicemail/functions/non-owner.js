@@ -17,6 +17,8 @@ exports.handler = function (event, context, callback) {
       recordingStatusCallback: "/recording-ready",
       recordingStatusCallbackEvent: "completed",
       finishOnKey: "#",
+      transcribe: true,
+      transcribeCallback: '/transcription-ready'
     });
     response.say("I did not receive a recording.");
     callback(null, response);

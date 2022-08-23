@@ -4,11 +4,20 @@
 
 ### <p style = 'text-align:center'>Table of Contents</p>
 
-- [Initializing a Twilio Project](#initializing_a_twilio_project)
-  - [setting environment variables](#setting-environments_variables)
-  - [setting a shared configuration file](#shared-configuration-file)
-- [Generating Twimil in a Twilio Function](#generating-twimil-in-a-twilio-function)
-- [Testing Our Functions Locally](#testing-functions-locally)
+- [<p style = 'text-align:center'>Getting Started  Twilio Advanced Platform</p>](#getting-started--twilio-advanced-platform)
+  - [<p style = 'text-align:center'>A personal library documenting how to use advanced features with Twilio</p> </br>](#a-personal-library-documenting-how-to-use-advanced-features-with-twilio-br)
+  - [<p style = 'text-align:center'>Table of Contents</p>](#table-of-contents)
+  - [<p style = 'text-align:center'>Initializing a Twilio Project</p>](#initializing-a-twilio-project)
+  - [<p style = 'text-align:center'>Setting Environment Variables</p>](#setting-environment-variables)
+  - [<p style = 'text-align:center'>Setting a Shared Configuration File</p>](#setting-a-shared-configuration-file)
+  - [<p style = 'text-align:center'>Generating Twiml In a Twilio Function (Make it Say Stuff!) :grin:</p>](#generating-twiml-in-a-twilio-function-make-it-say-stuff-grin)
+  - [<p style = 'text-align:center'>Testing Your Functions Locally</p>](#testing-your-functions-locally)
+  - [<p style = 'text-align:center'>Handling Input w/ Other Twilio Functions</p>](#handling-input-w-other-twilio-functions)
+  - [<p style = 'text-align:center'>Making Outbound Calls</p>](#making-outbound-calls)
+  - [<p style = 'text-align:center'>Deploying Your Code</p>](#deploying-your-code)
+  - [<p style = 'text-align:center'>Other Resources!</p>](#other-resources)
+  - [<p style = 'text-align:center'>Twilio Advanced Messaging</p>](#twilio-advanced-messaging)
+  - [<p style = 'text-align:center'>Message Scheduling</p>](#message-scheduling)
 
 </br>
 
@@ -204,5 +213,74 @@ After this, you can replace your Twilio phone number's **A Call Comes In** webho
 </br>
 
 ### <p style = 'text-align:center'>Other Resources!</p>
-And there you have it! A little bit of everything about Twilio. Hop in to the [Twilio Serveless API](https://www.twilio.com/docs/voice/api) and [Twiml for Programmable Voice](https://www.twilio.com/docs/voice/twiml) to learn more about what you can do :grin:#   T W I L I O - A D V A N C E D - P L A T F O R M  
- 
+And there you have it! A little bit of everything about Twilio. Hop in to the [Twilio Serveless API](https://www.twilio.com/docs/voice/api) and [Twiml for Programmable Voice](https://www.twilio.com/docs/voice/twiml) to learn more about what you can do :grin:
+</br> </br>
+
+---
+
+</br>
+
+### <p style = 'text-align:center'>Twilio Advanced Messaging</p>
+</br>
+
+Programmable Messaging is a REST API that enables you to send and receive messages in your chosen programming language, as well as track sent messages, schedule SMS messages, and retrieve and modify message history.
+
+Similarly to the app we created in Advanced Voice, we'll be using ***serverless Twilio Functions***, which means we can take advantage of the context object and its helper methods. The ***context object*** is an interface between the current execution environment and the handler method, providing access to helper methods, in addition to your environment variables. Here is the boilerplate for using this handler method:
+
+`exports.handler = (context, event, callback) => {`</br>
+  `return callback();`</br>
+`}`
+
+The helper method you will see throughout our code is `getTwilioClient()`. If your Twilio account credentials are included in your Function, this method will return an initialized Twilio REST Helper Library. This library helps you interact with Twilio's API using native Node.js code and it abstracts away the low-level HTTP communication that would normally require.
+
+For this section, we will continue with the voicemail app for example sake. But we'll cover the basic concepts of messaging while doing so.
+
+First you'll need a couple things:
+
+- ***Twilio CLI*** with the serverless plugin and ***Node.js*** installed on your machine.
+- Twilio Account SID, Auth Token SID, and a Twilio Phone Number accessibly via the Twilio console.
+
+ See [initializing a twilio project](#initializing_a_twilio_project) to set up everything if you haven't done so already.
+
+  The code we've used so far is pretty similar to the code we've used for voice with slight variations thrown, so I would suggest looking at **sms-owner.js**, **transcription-ready.js**, and **non-owner.js** to view the changes.
+
+  The code from **transcription-ready** was copied and pasted from **recording-ready.js** so I won't write on that again.
+
+---
+
+</br>
+
+### <p style = 'text-align:center'>Message Scheduling</p>
+</br>
+
+**Message Scheduling** is a feature that provides the ability to schedule an SMS, MMS, or WhatsApp message for a fixed time in the future. 
+
+This functionality is accessible on Messaging Services. As you may recall, a Messaging Service is a higher-level bundling of messaging functionality around a common set of senders, features, and configuration that you can manage through the Console or REST API. The key difference you’ll notice between sending a message in real-time vs. scheduling a message is that there is no ***from*** parameter. That’s because the Messaging Services utilizes a pool of Twilio phone numbers from which to send. Instead of ***from***, you’ll need a ***MessagingServiceSid***. The other parameters we’ll need are ***SendAt*** and ***ScheduleType***. Optionally, you can also use ***StatusCallback***.
+
+A couple things to understand:
+
+- Message Scheduling is only accessible on Messaging Services, requiring you to pass a ***MessageServiceSid*** instead of a ***From*** Phone Number. If you pass a ***From*** Phone Number, the message will be sent immediately even if you’ve included the other necessary parameters.
+
+- A message must be scheduled at least ***60 minutes*** in advance of message send time, but cannot be scheduled more than ***7 days*** in advance of the request. If your ***SendAt*** timestamp does not fit these requirements, you will receive an error when attempting to schedule.
+
+***<h2><font color=red>First, you'll need to create a messaging service in your twilio console, then we can move on. To create a message service, you need to own two or more phone numbers!</font>***</h2>
+
+After you've created your service, you'll need to pull the service sid number and add it as an environment variable in your .env file.
+
+Once you have your service enabled, youll need to pass the service sid instead of the ***from*** parameter, like so:
+
+![alt-text](/photo-examples/message-service-example.PNG)
+
+So Notice here that, we've passed our service sid as our "from" parameter so to speak!
+
+That should do it for sending messages. You can always search the [messages api](https://www.twilio.com/docs/voice/api/recording#fetch-a-recording-resource) on eberything that's available to you.
+
+<h2>Note: On the last section of the messaging advanced course, the syntax for this is <font color=red>wrong!!</font> You need to put the <font color=lighblue>aysnc</font> keyword in front of the function in order to have it work. Picture below: </h2>
+
+![alt-text](/photo-examples/syntax-error-twilio.PNG)
+
+That should do it for advanced Twilio platform. Always reference the Twilio API docs for more info on everything available! :grin:
+
+
+
+
